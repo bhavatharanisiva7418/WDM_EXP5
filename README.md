@@ -62,7 +62,32 @@ The Boolean model in Information Retrieval (IR) is a fundamental model used for 
         print(list(self.index.keys()))
 
     def boolean_search(self, query):
-        # TYPE YOUR CODE HERE
+     parts = query.lower().split()
+        if len(parts) == 1:
+            # Single term query
+            return self.index.get(parts[0], set())
+        
+        if len(parts) == 2 and parts[0] == 'not':
+            term = parts[1]
+            term_docs = self.index.get(term, set())
+            return self.all_doc_ids - term_docs
+        if len(parts) != 3:
+            return "Invalid query format. Use 'term1 operator term2' (e.g., 'python and information')."
+
+        term1, operator, term2 = parts[0], parts[1], parts[2]
+        
+        result_set1 = self.index.get(term1, set())
+        result_set2 = self.index.get(term2, set())
+        
+        if operator == 'and':
+            return result_set1.intersection(result_set2)
+        elif operator == 'or':
+            return result_set1.union(result_set2)
+        elif operator == 'not':
+            # This implements "term1 AND NOT term2" logic
+            return result_set1.difference(result_set2)
+        else:
+            return "Unsupported operator. Use 'and', 'or', or 'not'."
 
 if __name__ == "__main__":
     indexer = BooleanRetrieval()
